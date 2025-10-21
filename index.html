@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>ระบบรายรับรายจ่าย</title>
+  <title>ระบบเงินกู้ JARASHOP24</title>
   <style>
     body {
       font-family: sans-serif;
@@ -10,7 +10,6 @@
       margin: 0;
       padding: 20px;
     }
-
     .container {
       max-width: 700px;
       margin: auto;
@@ -19,19 +18,16 @@
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-
     h2 {
       text-align: center;
       margin-bottom: 20px;
     }
-
     label {
       display: block;
       margin-bottom: 10px;
       font-weight: bold;
     }
-
-    input, select, textarea {
+    input, select {
       width: 100%;
       padding: 8px;
       margin-top: 5px;
@@ -39,7 +35,6 @@
       border: 1px solid #ccc;
       border-radius: 5px;
     }
-
     button {
       background: #3498db;
       color: white;
@@ -50,34 +45,28 @@
       font-size: 16px;
       margin-bottom: 15px;
     }
-
     button:hover {
       background: #2980b9;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
     }
-
     th, td {
       border: 1px solid #ccc;
       padding: 8px;
       text-align: center;
     }
-
     th {
       background: #3498db;
       color: white;
     }
-
     .total {
       text-align: right;
       margin-top: 10px;
       font-weight: bold;
     }
-
     .action-btn {
       padding: 5px 10px;
       font-size: 14px;
@@ -86,20 +75,26 @@
       border: none;
       cursor: pointer;
       color: white;
+    }
+    .edit-btn {
       background: #f39c12;
     }
-
-    .action-btn:hover {
+    .edit-btn:hover {
       background: #e67e22;
+    }
+    .delete-btn {
+      background: #e74c3c;
+    }
+    .delete-btn:hover {
+      background: #c0392b;
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h2>ระบบรายรับรายจ่าย</h2>
+    <h2>ระบบเงินกู้ JARASHOP24</h2>
 
-    <!-- ฟอร์มบันทึกรายการ -->
     <label>วันที่: <input type="date" id="dateInput"></label>
     <label>รายการ: <input type="text" id="descInput"></label>
     <label>ประเภท:
@@ -115,7 +110,6 @@
     <label>วันที่ส่งยอด: <input type="date" id="submitDateInput"></label>
     <button onclick="addItem()">บันทึกรายการ</button>
 
-    <!-- ตารางแสดงผล -->
     <table id="dataTable">
       <thead>
         <tr>
@@ -162,6 +156,7 @@
         data.push(item);
       }
 
+      localStorage.setItem("expenseData", JSON.stringify(data));
       renderTable();
       clearForm();
     }
@@ -175,8 +170,15 @@
       document.getElementById("amountInput").value = item.amount;
       document.getElementById("noteInput").value = item.note;
       document.getElementById("submitDateInput").value = item.submitDate;
-
       editIndex = index;
+    }
+
+    function deleteItem(index) {
+      if (confirm("คุณต้องการลบรายการนี้ใช่หรือไม่?")) {
+        data.splice(index, 1);
+        localStorage.setItem("expenseData", JSON.stringify(data));
+        renderTable();
+      }
     }
 
     function clearForm() {
@@ -204,7 +206,10 @@
           <td>${item.method}</td>
           <td>${item.note}</td>
           <td>${item.submitDate || '-'}</td>
-          <td><button class="action-btn" onclick="editItem(${i})">แก้ไข</button></td>
+          <td>
+            <button class="action-btn edit-btn" onclick="editItem(${i})">แก้ไข</button>
+            <button class="action-btn delete-btn" onclick="deleteItem(${i})">ลบ</button>
+          </td>
         `;
         tbody.appendChild(row);
         total += (item.type === "รายรับ" || item.type === "เงินกู้") ? item.amount : -item.amount;
@@ -212,6 +217,14 @@
 
       document.getElementById("totalDisplay").textContent = `ยอดรวม: ${total.toFixed(2)} บาท`;
     }
+
+    window.onload = function () {
+      const saved = localStorage.getItem("expenseData");
+      if (saved) {
+        data = JSON.parse(saved);
+      }
+      renderTable();
+    };
   </script>
 
 </body>
