@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ระบบรายรับรายจ่าย</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+
+    button:hover {
+      background: #2980b9;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background: #3498db;
+      color: white;
+    }
+
+    .total {
+      text-align: right;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .action-btn {
+      padding: 5px 10px;
+      font-size: 14px;
+      margin: 2px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      color: white;
+      background: #f39c12;
+    }
+
+    .action-btn:hover {
+      background: #e67e22;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>ระบบรายรับรายจ่าย</h2>
+
+    <!-- ฟอร์มบันทึกรายการ -->
+    <label>วันที่: <input type="date" id="dateInput"></label>
+    <label>รายการ: <input type="text" id="descInput"></label>
+    <label>ประเภท:
+      <select id="typeInput">
+        <option value="รายรับ">รายรับ</option>
+        <option value="รายจ่าย">รายจ่าย</option>
+        <option value="เงินกู้">เงินกู้</option>
+      </select>
+    </label>
+    <label>วิธีชำระเงิน: <input type="text" id="methodInput"></label>
+    <label>จำนวนเงิน: <input type="number" id="amountInput"></label>
+    <label>หมายเหตุ: <input type="text" id="noteInput"></label>
+    <label>วันที่ส่งยอด: <input type="date" id="submitDateInput"></label>
+    <button onclick="addItem()">บันทึกรายการ</button>
+
+    <!-- ตารางแสดงผล -->
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>วันที่</th>
+          <th>รายการ</th>
+          <th>ประเภท</th>
+          <th>จำนวนเงิน</th>
+          <th>วิธีชำระเงิน</th>
+          <th>หมายเหตุ</th>
+          <th>วันที่ส่งยอด</th>
+          <th>จัดการ</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="total" id="totalDisplay">ยอดรวม: 0 บาท</div>
+  </div>
+
+  <script>
+    let data = [];
+    let editIndex = null;
+
+    function addItem() {
+      const date = document.getElementById("dateInput").value;
+      const desc = document.getElementById("descInput").value;
+      const type = document.getElementById("typeInput").value;
+      const method = document.getElementById("methodInput").value;
+      const amount = parseFloat(document.getElementById("amountInput").value);
+      const note = document.getElementById("noteInput").value;
+      const submitDate = document.getElementById("submitDateInput").value;
+
+      if (!date || !desc || isNaN(amount)) {
+        alert("กรุณากรอกข้อมูลให้ครบ");
+        return;
+      }
+
+      const item = { date, desc, type, method, amount, note, submitDate };
+
+      if (editIndex !== null) {
+        data[editIndex] = item;
+        editIndex = null;
+      } else {
+        data.push(item);
+      }
+
+      renderTable();
+      clearForm();
+    }
+
+    function editItem(index) {
+      const item = data[index];
+      document.getElementById("dateInput").value = item.date;
+      document.getElementById("descInput").value = item.desc;
+      document.getElementById("typeInput").value = item.type;
+      document.getElementById("methodInput").value = item.method;
+      document.getElementById("amountInput").value = item.amount;
+      document.getElementById("noteInput").value = item.note;
+      document.getElementById("submitDateInput").value = item.submitDate;
+
+      editIndex = index;
+    }
+
+    function clearForm() {
+      document.getElementById("dateInput").value = "";
+      document.getElementById("descInput").value = "";
+      document.getElementById("typeInput").value = "รายรับ";
+      document.getElementById("methodInput").value = "";
+      document.getElementById("amountInput").value = "";
+      document.getElementById("noteInput").value = "";
+      document.getElementById("submitDateInput").value = "";
+    }
+
+    function renderTable() {
+      const tbody = document.querySelector("#dataTable tbody");
+      tbody.innerHTML = "";
+      let total = 0;
+
+      data.forEach((item, i) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${item.date}</td>
+          <td>${item.desc}</td>
+          <td>${item.type}</td>
+          <td>${item.amount.toFixed(2)}</td>
+          <td>${item.method}</td>
+          <td>${item.note}</td>
+          <td>${item.submitDate || '-'}</td>
+          <td><button class="action-btn" onclick="editItem(${i})">แก้ไข</button></td>
+        `;
+        tbody.appendChild(row);
+        total += (item.type === "รายรับ" || item.type === "เงินกู้") ? item.amount : -item.amount;
+      });
+
+      document.getElementById("totalDisplay").textContent = `ยอดรวม: ${total.toFixed(2)} บาท`;
+    }
+  </script>
+
+</body>
+</html>
